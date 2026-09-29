@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
 export interface LineConfig {
   id: string; name: string; type: string; batchSize: number; fillSpeed: number; vialSizeMl: number; fillVolMl: number; shifts: number; oee: number; workingDays: number;
@@ -45,8 +44,7 @@ const defaultLines: LineConfig[] = [
 ];
 
 export const useAppStore = create<AppState>()(
-  persist(
-    (set, get) => ({
+  (set, get) => ({
       project: { name: "Hyderabad Sterile Injectables – Greenfield", location: "Hyderabad, Telangana", lat: 17.38, altitudeM: 542, dbSummer: 42, wbSummer: 26, rhSummer: 32, dbMonsoon: 33, rhMonsoon: 78, seismicZone: "II", windSpeedMs: 44, builtUpM2: 6500, cleanroomM2: 2100 },
       lines: defaultLines,
       scenarios: [
@@ -74,6 +72,4 @@ export const useAppStore = create<AppState>()(
       setFormulaOverride: (fid, inpId, val) => set((s) => ({ formulaOverrides: { ...s.formulaOverrides, [fid]: { ...(s.formulaOverrides[fid] ?? {}), [inpId]: val } } })),
       addAudit: (action, detail) => set((s) => ({ audit: [...s.audit.slice(-199), { ts: new Date().toISOString(), user: s.role, action, detail }] })),
     }),
-    { name: "ipds-v1", partialize: (s) => ({ project: s.project, lines: s.lines, formulaOverrides: s.formulaOverrides, dark: s.dark }) }
-  )
 );
