@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { CalcFormula } from "../engine/calcEngine";
 
 export interface LineConfig {
   id: string; name: string; type: string; batchSize: number; fillSpeed: number; vialSizeMl: number; fillVolMl: number; shifts: number; oee: number; workingDays: number;
@@ -22,6 +24,9 @@ interface AppState {
   audit: AuditEntry[];
   currentModule: string;
   formulaOverrides: Record<string, Record<string, number>>;
+  customFormulas: CalcFormula[];
+  addCustomFormula: (f: CalcFormula) => void;
+  removeCustomFormula: (id: string) => void;
   setProject: (p: Partial<ProjectConfig>) => void;
   setLines: (l: LineConfig[]) => void;
   addLine: () => void;
@@ -44,7 +49,7 @@ const defaultLines: LineConfig[] = [
 ];
 
 export const useAppStore = create<AppState>()(
-  (set, get) => ({
+  persist((set, get) => ({
       project: { name: "Hyderabad Sterile Injectables – Greenfield", location: "Hyderabad, Telangana", lat: 17.38, altitudeM: 542, dbSummer: 42, wbSummer: 26, rhSummer: 32, dbMonsoon: 33, rhMonsoon: 78, seismicZone: "II", windSpeedMs: 44, builtUpM2: 6500, cleanroomM2: 2100 },
       lines: defaultLines,
       scenarios: [
@@ -60,6 +65,9 @@ export const useAppStore = create<AppState>()(
       audit: [{ ts: new Date().toISOString(), user: "System", action: "Project created", detail: "Default Hyderabad greenfield" }],
       currentModule: "0",
       formulaOverrides: {},
+      customFormulas: [],
+      addCustomFormula: (f) => { set((s) => ({ customFormulas: [...s.customFormulas, f] })); get().addAudit("Custom formula added", `${f.id}: ${f.expression}`); },
+      removeCustomFormula: (id) => { set((s) => ({ customFormulas: s.customFormulas.filter((x) => x.id !== id) })); get().addAudit("Custom formula removed", id); },
       setProject: (p) => { set((s) => ({ project: { ...s.project, ...p } })); get().addAudit("Project updated", JSON.stringify(p)); },
       setLines: (l) => set({ lines: l }),
       addLine: () => set((s) => ({ lines: [...s.lines, { id: `L${s.lines.length + 1}`, name: `L${s.lines.length + 1} – New Line (editable)`, type: "User-defined", batchSize: 5000, fillSpeed: 150, vialSizeMl: 10, fillVolMl: 5, shifts: 2, oee: 60, workingDays: 300 }] })),
@@ -71,5 +79,5 @@ export const useAppStore = create<AppState>()(
       toggleDark: () => set((s) => ({ dark: !s.dark })),
       setFormulaOverride: (fid, inpId, val) => set((s) => ({ formulaOverrides: { ...s.formulaOverrides, [fid]: { ...(s.formulaOverrides[fid] ?? {}), [inpId]: val } } })),
       addAudit: (action, detail) => set((s) => ({ audit: [...s.audit.slice(-199), { ts: new Date().toISOString(), user: s.role, action, detail }] })),
-    }),
+    }), { name: "ipds-state", partialize: (s) => ({ project: s.project, lines: s.lines, role: s.role, dark: s.dark, audit: s.audit, formulaOverrides: s.formulaOverrides, customFormulas: s.customFormulas }) as any }),
 );
