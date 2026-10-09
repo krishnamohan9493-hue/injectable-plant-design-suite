@@ -14,6 +14,8 @@ export function CalcCard({ formula, onExplain }: { formula: CalcFormula; onExpla
   const overrides = useAppStore((s) => s.formulaOverrides[formula.id] ?? {});
   const setOverride = useAppStore((s) => s.setFormulaOverride);
   const addAudit = useAppStore((s) => s.addAudit);
+  const role = useAppStore((s) => s.role);
+  const canEdit = role === "Admin" || role === "Designer";
   const result = evaluateFormula(formula, overrides);
   const [showFormula, setShowFormula] = React.useState(false);
 
@@ -51,6 +53,7 @@ export function CalcCard({ formula, onExplain }: { formula: CalcFormula; onExpla
                   if (!isNaN(v)) { setOverride(formula.id, inp.id, v); addAudit("Calc input edited", `${formula.id}.${inp.id}=${v}`); }
                 }}
                 step="any"
+                disabled={!canEdit}
               />
               <div className="text-[10px] opacity-60">default – verify: {inp.defaultVal}</div>
             </div>
