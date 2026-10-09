@@ -4,11 +4,17 @@ import { CalcCard } from "./components/CalcCard";
 import { PsychChart } from "./components/PsychChart";
 import { PressureCascade } from "./components/PressureCascade";
 import { FORMULAS } from "./engine/formulas";
+import { ModuleView, MODULE_INFO } from "./components/ModuleView";
+import { buildPdfReport } from "./engine/report";
+import type { Role, LineConfig } from "./store/appStore";
 import "./index.css";
 
 function Module0() {
   const lines = useAppStore((s) => s.lines);
   const project = useAppStore((s) => s.project);
+  const role = useAppStore((s) => s.role);
+  const canEdit = role === "Admin" || role === "Designer";
+  const upd = (id: string, patch: Partial<LineConfig>) => { useAppStore.getState().updateLine(id, patch); useAppStore.getState().addAudit("Line edited", `${id}: ${JSON.stringify(patch)}`); };
   const formulas = React.useMemo(() => FORMULAS.filter(f => f.moduleId === "0"), []);
   const handleExplain = (f: any) => {
     alert(`Standard: ${f.standardRef}\nRemarks: ${f.remarks ?? "N/A"}`);
@@ -81,24 +87,17 @@ function Module0() {
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                 {lines.map((line) => (
                   <tr key={line.id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
-                    <td className="px-4 py-2 text-sm font-medium">{line.name}</td>
-                    <td className="px-4 py-2 text-sm">{line.type}</td>
-                    <td className="px-4 py-2 text-sm">{line.batchSize.toLocaleString()}</td>
-                    <td className="px-4 py-2 text-sm">{line.fillSpeed}</td>
-                    <td className="px-4 py-2 text-sm">{line.vialSizeMl}</td>
-                    <td className="px-4 py-2 text-sm">{line.fillVolMl}</td>
-                    <td className="px-4 py-2 text-sm">{line.shifts}</td>
-                    <td className="px-4 py-2 text-sm">{line.oee}</td>
-                    <td className="px-4 py-2 text-sm">{line.workingDays}</td>
-                    <td className="px-4 py-2 text-sm space-x-2">
-                      <button onClick={() => alert(`Edit line ${line.id}`)} className="btn-xs btn-outline">Edit</button>
-                      <button onClick={() => alert(`Delete line ${line.id}`)} className="btn-xs btn-outline btn-destructive">Del</button>
-                    </td>
+                    <td className="px-2 py-1 text-sm"><input disabled={!canEdit} className="w-56 rounded border px-2 py-1 bg-transparent" value={line.name} onChange={(e) => upd(line.id, { name: e.target.value })} /></td>
+                    <td className="px-2 py-1 text-sm"><input disabled={!canEdit} className="w-36 rounded border px-2 py-1 bg-transparent" value={line.type} onChange={(e) => upd(line.id, { type: e.target.value })} /></td>
+                    {(["batchSize", "fillSpeed", "vialSizeMl", "fillVolMl", "shifts", "oee", "workingDays"] as const).map((k) => (
+                      <td key={k} className="px-2 py-1 text-sm"><input disabled={!canEdit} type="number" step="any" className="w-20 rounded border px-2 py-1 bg-transparent" value={line[k]} onChange={(e) => { const v = parseFloat(e.target.value); if (!isNaN(v)) upd(line.id, { [k]: v }); }} /></td>
+                    ))}
+                    <td className="px-2 py-1 text-sm"><button disabled={!canEdit} onClick={() => { if (confirm(`Delete ${line.name}?`)) { useAppStore.getState().removeLine(line.id); useAppStore.getState().addAudit("Line deleted", line.id); } }} className="btn-xs btn-outline btn-destructive">Del</button></td>
                   </tr>
                 ))}
                 <tr className="bg-slate-50 dark:bg-slate-800">
                   <td className="px-4 py-2 text-sm font-medium" colSpan={9}>
-                    <button onClick={() => useAppStore.getState().addLine()} className="btn btn-sm btn-outline">+ Add New Line</button>
+                    <button disabled={!canEdit} onClick={() => { useAppStore.getState().addLine(); useAppStore.getState().addAudit("Line added", "new line"); }} className="btn btn-sm btn-outline">+ Add New Line</button>
                   </td>
                   <td className="px-4 py-2"></td>
                 </tr>
@@ -127,7 +126,7 @@ function Module1() {
       <h2 className="text-xl font-semibold mb-4">Architecture and Layout</h2>
       <p className="text-muted-foreground">Area programme, personnel/material flow, airlock sizing, cascade pressure map, adjacency matrix, fire compartments.</p>
       <PressureCascade />
-      {/* Additional architecture cards will go here */}
+      <div className="mt-6"><ModuleView moduleId="1" /></div>
     </div>
   );
 }
@@ -138,19 +137,23 @@ function Module2() {
       <h2 className="text-xl font-semibold mb-4">HVAC and Cleanroom (Most Critical)</h2>
       <p className="text-muted-foreground">Room-by-room data sheets, cooling load, AHU sizing, chillers, isolator/RABS design.</p>
       <PsychChart />
-      {/* HVAC formula cards will go here */}
+      <div className="mt-6"><ModuleView moduleId="2" /></div>
     </div>
   );
 }
 
-// Placeholder modules 3-11
-function ModulePlaceholder({ num }: { num?: number }) {
+function GenericModule({ id }: { id: string }) { return <ModuleView moduleId={id} />; }
+
+function AuditView() {
+  const audit = useAppStore((s) => s.audit);
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Module {num ?? 3} - Placeholder</h2>
-      <p className="text-muted-foreground">This module is under development. Formulas and UI will be implemented in the next steps.</p>
-      <div className="border rounded-xl p-4 bg-white dark:bg-slate-900 text-center py-8">
-        <p className="text-muted-foreground">Content for Module {num ?? 3} goes here.</p>
+    <div className="space-y-3">
+      <h2 className="text-xl font-semibold">Audit Log (ALCOA+ trail)</h2>
+      <div className="overflow-x-auto border rounded-xl">
+        <table className="min-w-full text-xs">
+          <thead className="bg-slate-50 dark:bg-slate-800"><tr><th className="px-3 py-2 text-left">Time</th><th className="px-3 py-2 text-left">Role</th><th className="px-3 py-2 text-left">Action</th><th className="px-3 py-2 text-left">Detail</th></tr></thead>
+          <tbody>{[...audit].reverse().map((a, i) => <tr key={i} className="border-t"><td className="px-3 py-1 whitespace-nowrap">{a.ts.slice(0, 19).replace("T", " ")}</td><td className="px-3 py-1">{a.user}</td><td className="px-3 py-1">{a.action}</td><td className="px-3 py-1 break-all">{a.detail}</td></tr>)}</tbody>
+        </table>
       </div>
     </div>
   );
@@ -161,22 +164,7 @@ function App() {
   const role = useAppStore((s) => s.role);
   const dark = useAppStore((s) => s.dark);
 
-  const moduleMap: Record<string, React.ComponentType<{ num?: number }>> = {
-    "0": Module0,
-    "1": Module1,
-    "2": Module2,
-    "3": ModulePlaceholder,
-    "4": ModulePlaceholder,
-    "5": ModulePlaceholder,
-    "6": ModulePlaceholder,
-    "7": ModulePlaceholder,
-    "8": ModulePlaceholder,
-    "9": ModulePlaceholder,
-    "10": ModulePlaceholder,
-    "11": ModulePlaceholder,
-  };
-
-  const ModuleComponent = moduleMap[currentModule] || ModulePlaceholder;
+  const ModuleComponent = currentModule === "audit" ? AuditView : currentModule === "0" ? Module0 : currentModule === "1" ? Module1 : currentModule === "2" ? Module2 : () => <GenericModule id={currentModule} />;
 
   return (
     <div className={`min-h-screen bg-background text-foreground transition-colors duration-200 ${dark ? "dark" : ""}`}>
@@ -184,7 +172,12 @@ function App() {
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-lg font-semibold">Injectable Plant Design Suite</h1>
           <div className="flex items-center gap-3">
-            <span className="text-sm opacity-70">{role}</span>
+            <select value={role} onChange={(e) => useAppStore.getState().setRole(e.target.value as Role)} className="rounded border px-2 py-1 text-sm bg-transparent">
+              {["Admin", "Designer", "Reviewer", "Approver", "Auditor"].map((r) => <option key={r}>{r}</option>)}
+            </select>
+            {!(role === "Admin" || role === "Designer") && <span className="text-xs opacity-70">read-only</span>}
+            <button onClick={() => useAppStore.getState().setModule(currentModule === "audit" ? "0" : "audit")} className="btn btn-sm btn-ghost">📜 Audit log</button>
+            <button onClick={() => buildPdfReport()} className="btn btn-sm btn-ghost">📄 PDF report</button>
             <button onClick={() => useAppStore.getState().toggleDark()} className="btn btn-sm btn-ghost">
               {dark ? "☀️ Light" : "🌙 Dark"}
             </button>
@@ -205,7 +198,7 @@ function App() {
                   className={`w-full text-left justify-start px-3 py-2 rounded-lg transition-colors ${currentModule === String(n) ? "bg-primary/20 text-primary" : "hover:bg-accent/10"}`}
                 >
                   <span className="mr-2">M{n}</span>
-                  <span className="flex-1">{n === 0 ? "Project Setup & URS" : n === 1 ? "Architecture & Layout" : n === 2 ? "HVAC & Cleanroom" : n === 3 ? "Process & Equipment Sizing" : n === 4 ? "Utilities – Water Systems" : n === 5 ? "Utilities – Compressed Air, Gases, Steam, Vacuum, Fuel" : n === 6 ? "Electrical System" : n === 7 ? "Instrumentation, Control & Automation" : n === 8 ? "BMS/EMS/Access/Safety Systems" : n === 9 ? "Mechanical & Piping" : n === 10 ? "Qualification, Validation & Compliance" : n === 11 ? "Cost, Schedule & Sustainability" : ""}</span>
+                  <span className="flex-1">{MODULE_INFO[String(n)].title}</span>
                 </button>
               ))}
             </nav>
@@ -214,9 +207,9 @@ function App() {
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground">Completion:</div>
               <div className="w-full bg-accent rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: "33%" }}></div>
+                <div className="bg-primary h-2 rounded-full" style={{ width: "100%" }}></div>
               </div>
-              <div className="text-xs text-muted-foreground">33% (4/12 modules)</div>
+              <div className="text-xs text-muted-foreground">100% (12/12 modules)</div>
             </div>
           </div>
         </aside>
