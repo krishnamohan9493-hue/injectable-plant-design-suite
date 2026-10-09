@@ -10,8 +10,10 @@ function flagClass(status: string) {
   return "border-red-200 bg-red-50 dark:bg-red-900/20";
 }
 
+const EMPTY_OVERRIDES: Record<string, number> = {};
+
 export function CalcCard({ formula, onExplain }: { formula: CalcFormula; onExplain?: (f: CalcFormula) => void }) {
-  const overrides = useAppStore((s) => s.formulaOverrides[formula.id] ?? {});
+  const overrides = useAppStore((s) => s.formulaOverrides[formula.id] ?? EMPTY_OVERRIDES);
   const setOverride = useAppStore((s) => s.setFormulaOverride);
   const addAudit = useAppStore((s) => s.addAudit);
   const role = useAppStore((s) => s.role);
