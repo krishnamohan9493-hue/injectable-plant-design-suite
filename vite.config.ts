@@ -5,17 +5,4 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   base: process.env.NODE_ENV === 'production' ? '/injectable-plant-design-suite/' : '/',
-  optimizeDeps: {
-    include: ['react-is']
-  },
-  build: {
-    rollupOptions: {
-      external: ['react-is'],
-      output: {
-        globals: {
-          'react-is': 'reactIs'
-        }
-      }
-    }
-  }
 })
