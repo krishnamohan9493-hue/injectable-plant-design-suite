@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Injectable Plant Design Suite - India</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f5f8;--card:#fff;--tx:#12263a;--mu:#5d6c7d;--ac:#0b6670;--ac2:#e0f0f1;--bd:#d6dfe8;--ok:#17803d;--bad:#c02b2b;--hd:#0f2a43;--warn:#b86e00;--res:#edf5f6;box-sizing:border-box}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d131a;--card:#151d27;--tx:#e4e9ef;--mu:#93a0b2;--ac:#4cc0cb;--ac2:#143039;--bd:#263344;--ok:#4cc27a;--bad:#ff7b7b;--hd:#07101a;--warn:#ffb84d;--res:#112a33}}
@@ -59,6 +59,24 @@ table{border-collapse:collapse;width:100%}td,th{padding:7px 10px;border-bottom:1
   input,select,textarea{border:none!important;background:none!important;padding:0!important;color:#000!important}
   .ok{color:#006400!important;font-weight:bold;background:none!important}.bad{color:#c02b2b!important;font-weight:bold;background:none!important}
 }
+/* refinements */
+body{font-family:Inter,"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13.5px;-webkit-font-smoothing:antialiased}
+h1,h2{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;letter-spacing:0}
+h1{font-size:26px;font-weight:600}
+h2{font-size:20px;font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--bd);margin-bottom:8px}
+header{padding:18px 28px 16px}
+.c{border-radius:10px;padding:22px 24px;box-shadow:0 1px 1px rgba(15,42,67,.04)}
+button,input,select,textarea{border-radius:6px}
+button{font-size:13px;font-weight:500}
+.ng{border-top:1px solid var(--bd);padding-top:10px;margin-bottom:10px}.ng:first-child{border-top:0;padding-top:0}
+.ng span{font-size:11.5px;letter-spacing:.02em}
+nav button{font-size:13px;padding:5px 10px;border-radius:0 6px 6px 0}
+label{font-size:11.5px;letter-spacing:.01em}
+th{font-size:11.5px;border-bottom:2px solid var(--bd)}
+table:not(.o) tr:hover td{background:color-mix(in srgb,var(--ac) 5%,transparent)}
+.o{border-radius:8px;border:1px solid var(--bd)}
+.k{border-radius:6px;font-size:12.5px}
+@media(max-width:860px){.ng{border:0;padding:0;margin:0}nav button{border-radius:999px}h1{font-size:21px}}
 </style></head><body>
 <header><div><h1 id="ttl">Injectable Plant Design Suite</h1><small id="sub"></small><small>Designed and engineered by Krishna Mohan</small></div><div class="row" style="margin:0"><button data-act="theme">Theme</button><button data-act="csv">Export CSV</button><button data-act="print">Print sheet</button><button data-act="printall" class="p">Print all calcs</button></div></header>
 <div class="app"><nav id="nav"></nav><main id="m"></main></div><footer>Injectable Plant Design Suite · Designed and engineered by Krishna Mohan. Design aid only.</footer>
@@ -459,6 +477,24 @@ return`<section class="c"><h2>What-if and sensitivity</h2><p class="mu">Vary one
 function regsView(){const rows=ORD.map(id=>{const g=S.reg2[id]||{},c=(R[id]&&R[id].c)||[],ok=c.every(x=>x[0]),i=(k,t)=>`<input data-rs="${id}" data-c="${k}" type="${t||'text'}" value="${esc(g[k]||'')}">`;return`<tr><td>${esc(S.p.doc)}-${id.toUpperCase()}</td><td>${esc(M[id].t)}</td><td style="font-weight:600;color:var(--${ok?'ok':'bad'})">${ok?'Pass':'Review'} ${c.filter(x=>x[0]).length}/${c.length}</td><td><select data-rs="${id}" data-c="st">${['Draft','Checked','Approved'].map(x=>`<option${(g.st||'Draft')==x?' selected':''}>${x}</option>`).join('')}</select></td><td>${i('pb')}</td><td>${i('cb')}</td><td>${i('ab')}</td><td>${i('dt','date')}</td></tr>`}).join('');const ap=ORD.filter(id=>(S.reg2[id]||{}).st=='Approved').length;
 return`<section class="c"><h2>Calculation register and sign-off</h2><p class="mu">${ap} of ${ORD.length} calculations approved. Each calculation has a number, a design-check result, a status and named preparer, checker and approver. Signatures here are typed names for the printed calc book; they are not electronic signatures under 21 CFR Part 11.</p><div class="sc"><table><tr><th>Calc no.</th><th>Title</th><th>Checks</th><th>Status</th><th>Prepared</th><th>Checked</th><th>Approved</th><th>Date</th></tr>${rows}</table></div></section>`}
 TABS.push(['rooms','Room data sheet'],['fmea','Risk (FMEA)'],['sens','What-if'],['regs','Calc register']);
+
+/* ---- DUCT NETWORK + URS TRACEABILITY ---- */
+const fresh=!S.dnet;S.dnet=S.dnet||{e:.15,vt:6,ar:2,vl:8,fl:1,secs:[['Main supply trunk','A,B',12350,30,'Rect',2],['Branch to filling room','A',8750,20,'Rect',3],['Branch to compounding','B',3600,25,'Rect',3],['Final drop to HEPA (filling)','A',700,4,'Round',1.5],['Final drop to HEPA (compounding)','B',700,4,'Round',1.5]].map(a=>({n:a[0],tag:a[1],q:a[2],L:a[3],sh:a[4],d:300,w:300,h:200,sc:a[5]}))};
+const dnSize=s=>{const c=S.dnet,D=Math.sqrt(4*s.q/3600/(Math.PI*c.vt))*1000;s.d=STDD.find(x=>x>=D)||STDD[STDD.length-1];const b=D*Math.pow(c.ar+1,.25)/(1.3*Math.pow(c.ar,.625));s.h=Math.ceil(b/50)*50;s.w=Math.ceil(b*c.ar/50)*50};
+if(fresh)S.dnet.secs.forEach(dnSize);
+const DNR=s=>{const c=S.dnet,q=s.q/3600;let D,v;if(s.sh=='Round'){D=s.d/1000;v=q/(Math.PI/4*D*D)}else{const a=s.w/1000,b=s.h/1000;D=1.3*Math.pow(a*b,.625)/Math.pow(a+b,.25);v=q/(a*b)}const fr=dpm(D,q,1.2,1.81e-5,c.e/1000),pv=.6*v*v;return{v,fr,pv,dp:fr*s.L+s.sc*pv}};
+const dnTot=()=>{const tg={};S.dnet.secs.forEach(s=>{const r=DNR(s);String(s.tag).split(',').map(x=>x.trim()).filter(Boolean).forEach(t=>tg[t]=(tg[t]||0)+r.dp)});const ks=Object.keys(tg);return{tg,crit:ks.reduce((a,b)=>tg[b]>(tg[a]??-1)?b:a,'')}};
+function dnetView(){const c=S.dnet,{tg,crit}=dnTot(),di=(i,k,t,w,dis)=>`<input data-dn="${i}" data-c="${k}" type="${t}" step="any" value="${esc(c.secs[i][k])}" style="min-width:${w||84}px"${dis?' disabled':''}>`;let bv=0,bf=0;
+const rows=c.secs.map((s,i)=>{const r=DNR(s),rd=s.sh=='Round';if(r.v>c.vl)bv++;if(r.fr>c.fl)bf++;return`<tr><td>${di(i,'n','text',170)}</td><td>${di(i,'tag','text',60)}</td><td>${di(i,'q','number')}</td><td>${di(i,'L','number',56)}</td><td><select data-dn="${i}" data-c="sh" style="min-width:84px">${['Round','Rect'].map(x=>`<option${x==s.sh?' selected':''}>${x}</option>`).join('')}</select></td><td>${di(i,'d','number',84,!rd)}</td><td>${di(i,'w','number',84,rd)}</td><td>${di(i,'h','number',84,rd)}</td><td>${di(i,'sc','number',56)}</td><td style="color:var(--${r.v>c.vl?'bad':'tx'})">${n2(r.v,2)}</td><td style="color:var(--${r.fr>c.fl?'warn':'tx'})">${n2(r.fr,3)}</td><td style="font-weight:600">${n2(r.dp,1)}</td><td><button data-act="dndel" data-i="${i}">Remove</button></td></tr>`}).join('');
+const cf=(k,l,u)=>`<label>${l} (${u})<input data-dc="${k}" type="number" step="any" value="${c[k]}"></label>`;
+return`<section class="c"><h2>Duct network – multi-section pressure drop</h2><p class="mu">List each duct section with the paths it serves (tags separated by commas, e.g. A,B for a shared trunk). Section losses add along each path; the path with the highest loss is critical and sets the fan duct pressure. Rectangular sections use the equal-friction equivalent diameter (ASHRAE).</p><div class="g">${cf('e','Roughness','mm')}${cf('vt','Sizing velocity','m/s')}${cf('ar','Aspect ratio','W:H')}${cf('vl','Velocity limit','m/s')}${cf('fl','Friction limit','Pa/m')}</div><div class="sc"><table><tr><th>Section</th><th>Paths</th><th>Flow m³/h</th><th>Length m</th><th>Shape</th><th>Dia mm</th><th>W mm</th><th>H mm</th><th>ΣC</th><th>Vel m/s</th><th>Pa/m</th><th>Loss Pa</th><th></th></tr>${rows}</table></div><div class="row"><button data-act="dnadd">Add section</button><button data-act="dnsize">Auto-size all to sizing velocity</button><button class="p" data-act="dnfan">Send critical path loss to Fan tab</button></div><table class="o" style="margin-top:12px">${Object.keys(tg).map(t=>`<tr><td>Path ${esc(t)}${t==crit?' (critical)':''}</td><td>${n2(tg[t],1)}</td><td>Pa</td></tr>`).join('')}</table><div class="k ${bv?'bad':'ok'}">${bv?bv+' section(s) above the velocity limit':'All sections within the velocity limit'}</div><div class="k ${bf?'bad':'ok'}">${bf?bf+' section(s) above the friction limit':'All sections within the friction limit'}</div></section>`}
+S.urs=S.urs||[['URS-01','Pressure step of at least 10 Pa between adjacent cleanroom grades','HVAC','rooms','','IQ-HV-03','OQ-HV-02',''],['URS-02','Grade A unidirectional velocity 0.36 to 0.54 m/s at working height','HVAC','hvac','','','OQ-HV-04',''],['URS-03','Room recovery to grade within 20 minutes (100:1)','HVAC','rec','','','OQ-HV-05','PQ-HV-01'],['URS-04','HEPA terminals integrity tested with no leak above 0.01%','HVAC','hepa','','IQ-HV-05','OQ-HV-01',''],['URS-05','Temperature and RH held in all seasons including monsoon','HVAC','ahu','','','OQ-HV-06','PQ-HV-02'],['URS-06','AHU fan and motor sized with margin; specific fan power within target','HVAC','fan','','IQ-HV-02','',''],['URS-07','Purified water and WFI capacity covers peak demand with margin','Utilities','wtr','','IQ-UT-01','OQ-UT-01','PQ-UT-01'],['URS-08','No dead leg above 1.5D on water loops','Utilities','deadleg','','IQ-UT-04','',''],['URS-09','DG and UPS carry critical loads on mains failure','Electrical','ups','','','OQ-EL-03',''],['URS-10','Earthing system meets IS and CEA requirements','Electrical','earth','','IQ-EL-06','','']].map(a=>({id:a[0],t:a[1],cat:a[2],calc:a[3],dq:a[4],iq:a[5],oq:a[6],pq:a[7]}));
+const CALCS=[...ORD.map(id=>[id,M[id].t]),['rooms','Room data sheet'],['deadleg','Dead-leg check'],['dnet','Duct network'],['cold','Cold rooms'],['pipe','Piping']];
+function traceView(){const sel=(i,k,o)=>`<select data-ur="${i}" data-c="${k}">${o.map(x=>`<option value="${esc(x[0])}"${x[0]==S.urs[i][k]?' selected':''}>${esc(x[1])}</option>`).join('')}</select>`,tx=(i,k,w)=>`<input data-ur="${i}" data-c="${k}" type="text" value="${esc(S.urs[i][k]||'')}" style="min-width:${w||70}px">`;let tr=0;
+const rows=S.urs.map((u,i)=>{const cs=R[u.calc],ok=cs?cs.c.every(x=>x[0]):null,nt=['dq','iq','oq','pq'].filter(k=>(u[k]||'').trim()).length,lk=!!u.calc,st=!lk&&!nt?['Gap','dl-fail']:!lk?['Needs calc','dl-warn']:!nt?['Needs test','dl-warn']:ok===false?['Calc failing','dl-fail']:['Traced','dl-pass'];if(st[0]=='Traced')tr++;return`<tr><td>${tx(i,'id',64)}</td><td>${tx(i,'t',280)}</td><td>${sel(i,'cat',['HVAC','Electrical','Utilities','Process','Automation','Compliance'].map(x=>[x,x]))}</td><td>${sel(i,'calc',[['','None'],...CALCS])}</td><td>${tx(i,'dq',64)}</td><td>${tx(i,'iq',64)}</td><td>${tx(i,'oq',64)}</td><td>${tx(i,'pq',64)}</td><td><span class="dl-badge ${st[1]}">${st[0]}</span></td><td><button data-act="ursdel" data-i="${i}">Remove</button></td></tr>`}).join('');
+const used=new Set(S.urs.map(u=>u.calc)),orph=ORD.filter(id=>!used.has(id));
+return`<section class="c"><h2>Traceability matrix – URS to calculation to qualification</h2><p class="mu">Each user requirement links to the calculation that proves the design and to the DQ, IQ, OQ and PQ tests that verify it as built. A row is traced when it has a calculation with passing checks and at least one test reference.</p><div class="sc"><table><tr><th>URS</th><th>Requirement</th><th>Category</th><th>Calculation</th><th>DQ</th><th>IQ</th><th>OQ</th><th>PQ</th><th>Status</th><th></th></tr>${rows}</table></div><div class="row"><button class="p" data-act="ursadd">Add requirement</button></div><table class="o" style="margin-top:12px"><tr><td>Requirements traced</td><td>${tr} of ${S.urs.length}</td><td></td></tr></table><div class="k ${orph.length?'warn':'ok'}">${orph.length?'Calculations with no URS link: '+orph.map(id=>esc(M[id].t)).join('; '):'Every calculation is linked to a requirement'}</div></section>`}
+TABS.push(['dnet','Duct network'],['trace','Traceability']);
 let tab='dash',all=false;
 
 function card(id){const m=M[id],r=R[id];return`<section class="c"><h2>${m.t}</h2><p class="mu">${m.r.join('; ')}. Verify against current editions.</p><div class="g">${m.f.map(f=>fld(id,f)).join('')}</div><div class="sc"><table class="o">${r.o.map(x=>`<tr><td>${x[0]}</td><td>${esc(x[1])}</td><td>${x[2]}</td></tr>`).join('')}</table></div>${r.c.map(c=>`<div class="k ${c[0]?'ok':'bad'}">${c[0]?'Pass':'Fail'}: ${c[1]}</div>`).join('')}<label style="margin-top:12px">Design basis, assumptions and source of inputs<textarea data-nt="${id}" placeholder="Datasheet, URS clause, design case, standard edition used">${esc((S.notes||{})[id]||'')}</textarea></label>${id=='wtr'?`<div class="row"><button data-act='util' class='p'>Add utility loads to load list</button></div>`:''}${id=='ups'?`<div class="row"><button data-act="syncups" class="p">Sync with Critical Loads (${n2(T.kW_C)} kW)</button></div>`:''}</section>`}
@@ -595,12 +631,12 @@ function render(){
   compute();
   $('#ttl').textContent=S.p.name||'Injectable Plant Design Suite';
   $('#sub').textContent=`${S.p.doc} · Rev ${S.p.rev} · ${S.p.loc}`;
-  const GR=[['Project',['dash','loads','sld','est','sch']],['Design basis',['scope','ind']],['Electrical',['tr','dg','ups','cab','efli','pfc','ltg','earth','prot','arc','hrm','lpr','bus']],['HVAC and cleanroom',['rooms','hvac','ahu','duct','press','rec','hepa','fan']],['Utilities and process',['wtr','deadleg','cold','pipe']],['Design control',['fmea','sens','regs']],['Compliance',['fda','reg']],['Tools',['cust']]];
+  const GR=[['Project',['dash','loads','sld','est','sch']],['Design basis',['scope','ind']],['Electrical',['tr','dg','ups','cab','efli','pfc','ltg','earth','prot','arc','hrm','lpr','bus']],['HVAC and cleanroom',['rooms','hvac','ahu','duct','dnet','press','rec','hepa','fan']],['Utilities and process',['wtr','deadleg','cold','pipe']],['Design control',['trace','fmea','sens','regs']],['Compliance',['fda','reg']],['Tools',['cust']]];
   $('#nav').innerHTML=GR.map(g=>`<div class="ng"><span>${g[0]}</span>${g[1].map(id=>{const t=TABS.find(x=>x[0]==id);return t?`<button data-tab="${t[0]}"${t[0]==tab&&!all?' class="on"':''}>${t[1]}</button>`:''}).join('')}</div>`).join('');
   const printHeader = `<div class="print-header"><h2>${esc(S.p.name)} – Engineering Calculation Book</h2><p>Document: ${esc(S.p.doc)} | Rev: ${esc(S.p.rev)} | Location: ${esc(S.p.loc)}<br>Prepared by: ${esc(S.p.by)} | Print Date: ${new Date().toLocaleDateString()}</p></div>`;
   let body;
   if(all){
-    body = printHeader + `<section class="c"><h2>${esc(S.p.name)} – calculation book</h2></section>`+loadsView()+ORD.map(card).join('')+sldView()+deadlegView()+coldView()+pipeView()+estView()+schView()+fdaView()+regView()+scopeView()+indView()+roomsView()+fmeaView()+regsView();
+    body = printHeader + `<section class="c"><h2>${esc(S.p.name)} – calculation book</h2></section>`+loadsView()+ORD.map(card).join('')+sldView()+deadlegView()+coldView()+pipeView()+estView()+schView()+fdaView()+regView()+scopeView()+indView()+roomsView()+dnetView()+traceView()+fmeaView()+regsView();
   } else if(tab=='dash'){ body=dash(); }
   else if(tab=='loads'){ body=loadsView(); }
   else if(tab=='cust'){ body=custView(); }
@@ -612,6 +648,8 @@ function render(){
   else if(tab=='sch'){ body=schView(); }
   else if(tab=='fda'){ body=fdaView(); }
   else if(tab=='reg'){ body=regView(); }
+  else if(tab=='dnet'){ body=dnetView(); }
+  else if(tab=='trace'){ body=traceView(); }
   else if(tab=='rooms'){ body=roomsView(); }
   else if(tab=='fmea'){ body=fmeaView(); }
   else if(tab=='sens'){ body=sensView(); }
@@ -634,6 +672,9 @@ else if(d.eq!==undefined){S.est[d.c]=S.est[d.c]||{};S.est[d.c][d.eq]=v;log('est'
 else if(d.sc!==undefined){S.sch.acts[d.sc][d.c]=v;log('sch',d.c,'',v)}
 else if(d.sk){S.sch.start=v;log('sch','start','',v)}
 else if(d.rg!==undefined){S.reg[d.rg]=S.reg[d.rg]||{};S.reg[d.rg][d.c]=t.value;log('compliance',REG[d.rg][0],'',t.value)}
+else if(d.ur!==undefined){S.urs[d.ur][d.c]=t.value}
+else if(d.dc!==undefined){S.dnet[d.dc]=+t.value||0}
+else if(d.dn!==undefined){const r=S.dnet.secs[d.dn];r[d.c]=['n','tag','sh'].includes(d.c)?t.value:+t.value}
 else if(d.nt!==undefined){S.notes[d.nt]=t.value}
 else if(d.rs!==undefined){(S.reg2[d.rs]=S.reg2[d.rs]||{})[d.c]=t.value}
 else if(d.rc!==undefined){S.rcfg[d.rc]=+t.value||0}
@@ -679,12 +720,18 @@ document.addEventListener('click',e=>{
   if(a=='util'){const x=R.wtr.x;S.loads=S.loads.filter(l=>l.src!='wtr');[['Purified water generator',x.pg,1],['PW loop pump',x.pp,.9],['WFI generator',x.wg,1],['WFI loop pump',x.wp,.9],['Clean steam auxiliaries',x.ca,1]].forEach(r=>S.loads.push({a:'Utilities',d:r[0],kw:Math.round(r[1]*10)/10,ef:r[2],pf:.85,df:.8,c:'E',src:'wtr'}));log('loads','add','','utility loads');tab='loads'}
   if(a=='add'){S.loads.push({a:'',d:'New load',kw:10,ef:.9,pf:.85,df:.8,c:'N'});log('loads','add','','row')}
   if(a=='del'){S.loads.splice(i,1)}
+  if(a=='ursadd'){S.urs.push({id:'URS-'+String(S.urs.length+1).padStart(2,'0'),t:'New requirement',cat:'HVAC',calc:'',dq:'',iq:'',oq:'',pq:''})}
+  if(a=='ursdel'){S.urs.splice(i,1)}
+  if(a=='dnadd'){const s={n:'New section',tag:dnTot().crit||'A',q:1000,L:10,sh:'Rect',d:300,w:300,h:200,sc:1};dnSize(s);S.dnet.secs.push(s)}
+  if(a=='dndel'){S.dnet.secs.splice(i,1)}
+  if(a=='dnsize'){S.dnet.secs.forEach(dnSize);log('duct network','auto-size','','all')}
+  if(a=='dnfan'){const t=dnTot();S.v.fan=S.v.fan||{};S.v.fan.d1=Math.round(t.tg[t.crit]||0);log('fan','duct pressure','',S.v.fan.d1)}
   if(a=='roomadd'){S.rooms.push({id:'R-'+(100+S.rooms.length+1),n:'New room',g:'C',a:20,h:3,ach:30,dp:15,t:21,rh:50,pp:2,eq:2})}
   if(a=='roomdel'){S.rooms.splice(i,1)}
   if(a=='rmahu'){const q=Math.round(roomCalc().reduce((x,r)=>x+r.q,0));['ahu','fan'].forEach(m=>{S.v[m]=S.v[m]||{};S.v[m].q=q});log('rooms','airflow','',q)}
   if(a=='fmadd'){S.fmea.push({i:'New system',f:'',e:'',s:3,o:3,d:3,m:''})}
   if(a=='fmdel'){S.fmea.splice(i,1)}
-  if(a=='csv'){const q=x=>'"'+String(x??'').replace(/"/g,'""')+'"',L=[['Module','Type','Item','Value','Unit']];ORD.forEach(id=>{M[id].f.forEach(f=>L.push([M[id].t,'Input',f[1],gv(id,f[0],f[2]),f[3]||'']));(R[id].o||[]).forEach(o=>L.push([M[id].t,'Result',o[0],o[1],o[2]]));(R[id].c||[]).forEach(c=>L.push([M[id].t,'Check',c[1],c[0]?'Pass':'Fail','']));if(S.notes[id])L.push([M[id].t,'Assumption','Notes',S.notes[id],''])});const bl=new Blob(['\ufeff'+L.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}),u=URL.createObjectURL(bl),el=document.createElement('a');el.href=u;el.download=(S.p.doc||'calc-book')+'.csv';el.click();URL.revokeObjectURL(u);return}
+  if(a=='csv'){const q=x=>'"'+String(x??'').replace(/"/g,'""')+'"',L=[['Module','Type','Item','Value','Unit']];ORD.forEach(id=>{M[id].f.forEach(f=>L.push([M[id].t,'Input',f[1],gv(id,f[0],f[2]),f[3]||'']));(R[id].o||[]).forEach(o=>L.push([M[id].t,'Result',o[0],o[1],o[2]]));(R[id].c||[]).forEach(c=>L.push([M[id].t,'Check',c[1],c[0]?'Pass':'Fail','']));if(S.notes[id])L.push([M[id].t,'Assumption','Notes',S.notes[id],''])});S.urs.forEach(u=>L.push(['Traceability',u.id,u.t,u.calc+' | DQ '+u.dq+' | IQ '+u.iq+' | OQ '+u.oq+' | PQ '+u.pq,'']));const bl=new Blob(['\ufeff'+L.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}),u=URL.createObjectURL(bl),el=document.createElement('a');el.href=u;el.download=(S.p.doc||'calc-book')+'.csv';el.click();URL.revokeObjectURL(u);return}
   if(a=='load'){try{S=JSON.parse($('#js').value)}catch(x){alert('Text is not valid project data.');return}}
   if(a=='reset'){if(!confirm('Reset all project data?'))return;S={};try{localStorage.removeItem(K)}catch(x){}location.reload();return}
   if(a=='delc'){S.cust.splice(i,1)}
