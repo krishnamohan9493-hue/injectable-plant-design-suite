@@ -495,6 +495,32 @@ const rows=S.urs.map((u,i)=>{const cs=R[u.calc],ok=cs?cs.c.every(x=>x[0]):null,n
 const used=new Set(S.urs.map(u=>u.calc)),orph=ORD.filter(id=>!used.has(id));
 return`<section class="c"><h2>Traceability matrix – URS to calculation to qualification</h2><p class="mu">Each user requirement links to the calculation that proves the design and to the DQ, IQ, OQ and PQ tests that verify it as built. A row is traced when it has a calculation with passing checks and at least one test reference.</p><div class="sc"><table><tr><th>URS</th><th>Requirement</th><th>Category</th><th>Calculation</th><th>DQ</th><th>IQ</th><th>OQ</th><th>PQ</th><th>Status</th><th></th></tr>${rows}</table></div><div class="row"><button class="p" data-act="ursadd">Add requirement</button></div><table class="o" style="margin-top:12px"><tr><td>Requirements traced</td><td>${tr} of ${S.urs.length}</td><td></td></tr></table><div class="k ${orph.length?'warn':'ok'}">${orph.length?'Calculations with no URS link: '+orph.map(id=>esc(M[id].t)).join('; '):'Every calculation is linked to a requirement'}</div></section>`}
 TABS.push(['dnet','Duct network'],['trace','Traceability']);
+
+/* ---- VERIFICATION SUITE (known-answer tests) ---- */
+const pn=x=>parseFloat(String(x).replace(/,/g,'')),tv=(id,o)=>{const v=Object.fromEntries(M[id].f.map(f=>[f[0],f[2]]));return M[id].calc({...v,...o},T,R)},ov=(r,l)=>pn(r.o.find(x=>x[0]==l)[1]);
+const colebrook=(D,v)=>{const Re=1.2*v*D/1.81e-5,e=.15e-3;let f=.02;for(let i=0;i<60;i++)f=Math.pow(-2*Math.log10(e/(3.7*D)+2.51/(Re*Math.sqrt(f))),-2);return f/D*1.2*v*v/2};
+const VT=[
+{n:'Saturation pressure at 25 °C (ASHRAE 3.169 kPa)',e:3.169,t:.5,u:'%',a:()=>PW(25)},
+{n:'Dew point at 25 °C and 60% RH (ASHRAE 16.7 °C)',e:16.7,t:.2,u:'abs',a:()=>TD(PW(25)*.6)},
+{n:'Enthalpy at 25 °C and 10 g/kg (50.6 kJ/kg)',e:50.6,t:.1,u:'abs',a:()=>HH(25,.01)},
+{n:'Barometric pressure at 500 m (95.46 kPa)',e:95.46,t:.3,u:'%',a:()=>{const o=S.p.alt;S.p.alt=500;const r=PA();S.p.alt=o;return r}},
+{n:'Duct friction against Colebrook solution (500 mm, 1 m³/s)',e:()=>colebrook(.5,1/(Math.PI/4*.25)),t:2,u:'%',a:()=>dpm(.5,1,1.2,1.81e-5,.15e-3)},
+{n:'Rectangular 400×400 friction equals round 437 mm (ASHRAE equivalent)',e:()=>dpm(.4371,1,1.2,1.81e-5,S.dnet.e/1000),t:1,u:'%',a:()=>DNR({sh:'Rect',w:400,h:400,q:3600,L:1,sc:0}).fr},
+{n:'Cleanroom airflow = volume × ACH (60 m² × 3 m × 45 = 8,100 m³/h)',e:8100,t:.5,u:'%',a:()=>ov(tv('hvac',{}),'Airflow from air changes')},
+{n:'Recovery time, 100:1 at 60 ACH and full mixing (4.6 min)',e:4.6,t:.06,u:'abs',a:()=>ov(tv('rec',{ach:60,eta:1,rt:100}),'Recovery time (100:1)')},
+{n:'Door leakage 0.827 × 0.01 m² × √25 Pa (148.9 m³/h)',e:148.9,t:1,u:'abs',a:()=>ov(tv('press',{nd:1,ag:.01,aw:0,dp:25}),'Closed-door leakage (offset airflow)')},
+{n:'AHU moisture balance: 2 kg/h gain = 1.39 kW latent',e:1.39,t:.06,u:'abs',a:()=>ov(tv('ahu',{fa:100,to:22,ro:50,tr:22,rr:50,mg:2}),'Latent portion')},
+{n:'Fan shaft power: 1 m³/s × 1000 Pa at 100% efficiency (1.00 kW)',e:1,t:.01,u:'abs',a:()=>ov(tv('fan',{q:3600,d1:1000,d2:0,d3:0,d4:0,d5:0,d6:0,d7:0,d8:0,ef:1}),'Fan shaft power')}];
+function runVerify(){return VT.map(t=>{let a,ex=typeof t.e=='function'?t.e():t.e;try{a=t.a()}catch(x){a=NaN}const d=t.u=='%'?Math.abs(a-ex)/Math.abs(ex)*100:Math.abs(a-ex);return{n:t.n,e:ex,a,d,t:t.t,u:t.u,ok:d<=t.t}})}
+function verifyView(){const r=runVerify(),p=r.filter(x=>x.ok).length;
+return`<section class="c"><h2>Verification of calculation engine</h2><p class="mu">Known-answer tests run every time this page loads. Each compares the app against a published value or an independent hand calculation. ${p} of ${r.length} passed. This is a design aid and is not a validated GxP system; if its output feeds a GMP record, apply your own computer software assurance procedure and keep this table with the calc book.</p><div class="sc"><table><tr><th>Test</th><th>Expected</th><th>Actual</th><th>Deviation</th><th>Limit</th><th>Result</th></tr>${r.map(x=>`<tr><td>${esc(x.n)}</td><td>${n2(x.e,3)}</td><td>${n2(x.a,3)}</td><td>${n2(x.d,3)} ${x.u=='%'?'%':''}</td><td>${x.t} ${x.u=='%'?'%':''}</td><td><span class="dl-badge ${x.ok?'dl-pass':'dl-fail'}">${x.ok?'Pass':'Fail'}</span></td></tr>`).join('')}</table></div></section>`}
+/* ---- PROJECT RECORD, FILES AND REVISIONS ---- */
+S.revs=S.revs||[];S.rvf=S.rvf||{rev:'B',why:'',by:''};
+function projView(){const f=S.rvf,rv=S.revs.map((r,i)=>`<tr><td>${esc(r.rev)}</td><td>${esc(r.date)}</td><td>${esc(r.by)}</td><td>${esc(r.why)}</td><td>${esc(r.ok)}</td><td><button data-act="revrestore" data-i="${i}">Restore</button></td></tr>`).join('');
+const ri=(k,l)=>`<label>${l}<input data-rv="${k}" type="text" value="${esc(f[k]||'')}"></label>`;
+return`<section class="c"><h2>Project record</h2><p class="mu">Project identity appears on every printout. Browser storage can be cleared, so save the project to a file to back it up or move it to another computer.</p><div class="g">${[['name','Project name',S.p.name||''],['doc','Document number',S.p.doc||''],['rev','Current revision',S.p.rev||''],['loc','Location',S.p.loc||''],['by','Prepared by',S.p.by||''],['alt','Site altitude',+S.p.alt||0,'m'],['amb','Design ambient',+S.p.amb||0,'°C']].map(x=>fld('p',x)).join('')}</div><div class="row"><button class="p" data-act="savef">Save project file</button><label style="display:inline-block;margin:0;cursor:pointer"><span style="display:inline-block;padding:7px 14px;border:1px solid var(--bd);border-radius:6px;background:var(--card);font-weight:500;font-size:13px;color:var(--tx)">Open project file</span><input id="pf" type="file" accept=".json,application/json" style="display:none"></label></div></section><section class="c"><h2>Revision history</h2><p class="mu">Issuing a revision keeps a full snapshot of all inputs, with the reason and the number of design checks passing at that time. Restore returns the project to that snapshot. The last 10 are kept.</p><div class="g">${ri('rev','New revision')}${ri('why','Reason for issue')}${ri('by','Issued by')}</div><div class="row"><button class="p" data-act="issue">Issue revision</button></div>${S.revs.length?`<div class="sc" style="margin-top:12px"><table><tr><th>Rev</th><th>Date</th><th>By</th><th>Reason</th><th>Checks passing</th><th></th></tr>${rv}</table></div>`:'<p class="mu" style="margin-top:12px">No revisions issued yet.</p>'}</section>`}
+TABS.push(['proj','Project record'],['verify','Verification']);
+let btnDown=false;document.addEventListener('mousedown',e=>{btnDown=!!e.target.closest('button')},true);document.addEventListener('mouseup',()=>setTimeout(()=>{btnDown=false},0),true);
 let tab='dash',all=false;
 
 function card(id){const m=M[id],r=R[id];return`<section class="c"><h2>${m.t}</h2><p class="mu">${m.r.join('; ')}. Verify against current editions.</p><div class="g">${m.f.map(f=>fld(id,f)).join('')}</div><div class="sc"><table class="o">${r.o.map(x=>`<tr><td>${x[0]}</td><td>${esc(x[1])}</td><td>${x[2]}</td></tr>`).join('')}</table></div>${r.c.map(c=>`<div class="k ${c[0]?'ok':'bad'}">${c[0]?'Pass':'Fail'}: ${c[1]}</div>`).join('')}<label style="margin-top:12px">Design basis, assumptions and source of inputs<textarea data-nt="${id}" placeholder="Datasheet, URS clause, design case, standard edition used">${esc((S.notes||{})[id]||'')}</textarea></label>${id=='wtr'?`<div class="row"><button data-act='util' class='p'>Add utility loads to load list</button></div>`:''}${id=='ups'?`<div class="row"><button data-act="syncups" class="p">Sync with Critical Loads (${n2(T.kW_C)} kW)</button></div>`:''}</section>`}
@@ -631,12 +657,12 @@ function render(){
   compute();
   $('#ttl').textContent=S.p.name||'Injectable Plant Design Suite';
   $('#sub').textContent=`${S.p.doc} · Rev ${S.p.rev} · ${S.p.loc}`;
-  const GR=[['Project',['dash','loads','sld','est','sch']],['Design basis',['scope','ind']],['Electrical',['tr','dg','ups','cab','efli','pfc','ltg','earth','prot','arc','hrm','lpr','bus']],['HVAC and cleanroom',['rooms','hvac','ahu','duct','dnet','press','rec','hepa','fan']],['Utilities and process',['wtr','deadleg','cold','pipe']],['Design control',['trace','fmea','sens','regs']],['Compliance',['fda','reg']],['Tools',['cust']]];
+  const GR=[['Project',['dash','proj','loads','sld','est','sch']],['Design basis',['scope','ind']],['Electrical',['tr','dg','ups','cab','efli','pfc','ltg','earth','prot','arc','hrm','lpr','bus']],['HVAC and cleanroom',['rooms','hvac','ahu','duct','dnet','press','rec','hepa','fan']],['Utilities and process',['wtr','deadleg','cold','pipe']],['Design control',['verify','trace','fmea','sens','regs']],['Compliance',['fda','reg']],['Tools',['cust']]];
   $('#nav').innerHTML=GR.map(g=>`<div class="ng"><span>${g[0]}</span>${g[1].map(id=>{const t=TABS.find(x=>x[0]==id);return t?`<button data-tab="${t[0]}"${t[0]==tab&&!all?' class="on"':''}>${t[1]}</button>`:''}).join('')}</div>`).join('');
   const printHeader = `<div class="print-header"><h2>${esc(S.p.name)} – Engineering Calculation Book</h2><p>Document: ${esc(S.p.doc)} | Rev: ${esc(S.p.rev)} | Location: ${esc(S.p.loc)}<br>Prepared by: ${esc(S.p.by)} | Print Date: ${new Date().toLocaleDateString()}</p></div>`;
   let body;
   if(all){
-    body = printHeader + `<section class="c"><h2>${esc(S.p.name)} – calculation book</h2></section>`+loadsView()+ORD.map(card).join('')+sldView()+deadlegView()+coldView()+pipeView()+estView()+schView()+fdaView()+regView()+scopeView()+indView()+roomsView()+dnetView()+traceView()+fmeaView()+regsView();
+    body = printHeader + `<section class="c"><h2>${esc(S.p.name)} – calculation book</h2></section>`+loadsView()+ORD.map(card).join('')+sldView()+deadlegView()+coldView()+pipeView()+estView()+schView()+fdaView()+regView()+scopeView()+indView()+roomsView()+dnetView()+traceView()+fmeaView()+regsView()+verifyView();
   } else if(tab=='dash'){ body=dash(); }
   else if(tab=='loads'){ body=loadsView(); }
   else if(tab=='cust'){ body=custView(); }
@@ -648,6 +674,8 @@ function render(){
   else if(tab=='sch'){ body=schView(); }
   else if(tab=='fda'){ body=fdaView(); }
   else if(tab=='reg'){ body=regView(); }
+  else if(tab=='proj'){ body=projView(); }
+  else if(tab=='verify'){ body=verifyView(); }
   else if(tab=='dnet'){ body=dnetView(); }
   else if(tab=='trace'){ body=traceView(); }
   else if(tab=='rooms'){ body=roomsView(); }
@@ -672,6 +700,8 @@ else if(d.eq!==undefined){S.est[d.c]=S.est[d.c]||{};S.est[d.c][d.eq]=v;log('est'
 else if(d.sc!==undefined){S.sch.acts[d.sc][d.c]=v;log('sch',d.c,'',v)}
 else if(d.sk){S.sch.start=v;log('sch','start','',v)}
 else if(d.rg!==undefined){S.reg[d.rg]=S.reg[d.rg]||{};S.reg[d.rg][d.c]=t.value;log('compliance',REG[d.rg][0],'',t.value)}
+else if(t.id=='pf'){const fl=t.files[0];if(fl){const fr=new FileReader();fr.onload=()=>{try{const j=JSON.parse(fr.result),st=j.state||j;if(!st.loads||!st.p)throw 0;S=st;save();location.reload()}catch(x){alert('This file is not a valid project file.')}};fr.readAsText(fl)}return}
+else if(d.rv!==undefined){S.rvf[d.rv]=t.value}
 else if(d.ur!==undefined){S.urs[d.ur][d.c]=t.value}
 else if(d.dc!==undefined){S.dnet[d.dc]=+t.value||0}
 else if(d.dn!==undefined){const r=S.dnet.secs[d.dn];r[d.c]=['n','tag','sh'].includes(d.c)?t.value:+t.value}
@@ -692,7 +722,7 @@ else if(d.fda){
   return;
 }
 else return;
-save();render()});
+save();if(!btnDown)render()});
 
 document.addEventListener('input', e => {
   const t = e.target, d = t.dataset;
@@ -720,6 +750,9 @@ document.addEventListener('click',e=>{
   if(a=='util'){const x=R.wtr.x;S.loads=S.loads.filter(l=>l.src!='wtr');[['Purified water generator',x.pg,1],['PW loop pump',x.pp,.9],['WFI generator',x.wg,1],['WFI loop pump',x.wp,.9],['Clean steam auxiliaries',x.ca,1]].forEach(r=>S.loads.push({a:'Utilities',d:r[0],kw:Math.round(r[1]*10)/10,ef:r[2],pf:.85,df:.8,c:'E',src:'wtr'}));log('loads','add','','utility loads');tab='loads'}
   if(a=='add'){S.loads.push({a:'',d:'New load',kw:10,ef:.9,pf:.85,df:.8,c:'N'});log('loads','add','','row')}
   if(a=='del'){S.loads.splice(i,1)}
+  if(a=='savef'){const bl=new Blob([JSON.stringify({schema:'ipds',version:1,exported:new Date().toISOString(),state:S},null,1)],{type:'application/json'}),u=URL.createObjectURL(bl),el=document.createElement('a');el.href=u;el.download=((S.p.doc||'project')+'_Rev'+(S.p.rev||'')).replace(/[^\w.-]+/g,'_')+'.json';el.click();URL.revokeObjectURL(u);return}
+  if(a=='issue'){const f=S.rvf;if(!f.rev||!f.why){alert('Enter the new revision and the reason for issue.');return}let p=0,m=0;ORD.forEach(id=>R[id].c.forEach(c=>{m++;if(c[0])p++}));const {revs,...rest}=S;S.revs.unshift({rev:f.rev,date:new Date().toISOString().slice(0,10),by:f.by||S.p.by,why:f.why,ok:p+'/'+m,data:JSON.stringify(rest)});S.revs=S.revs.slice(0,10);S.p.rev=f.rev;log('project','issued',f.rev,f.why);f.why=''}
+  if(a=='revrestore'){if(!confirm('Restore revision '+S.revs[i].rev+'? Unsaved changes will be lost.'))return;const r=JSON.parse(S.revs[i].data);S={...r,revs:S.revs};save();location.reload();return}
   if(a=='ursadd'){S.urs.push({id:'URS-'+String(S.urs.length+1).padStart(2,'0'),t:'New requirement',cat:'HVAC',calc:'',dq:'',iq:'',oq:'',pq:''})}
   if(a=='ursdel'){S.urs.splice(i,1)}
   if(a=='dnadd'){const s={n:'New section',tag:dnTot().crit||'A',q:1000,L:10,sh:'Rect',d:300,w:300,h:200,sc:1};dnSize(s);S.dnet.secs.push(s)}
