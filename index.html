@@ -1,49 +1,67 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Injectable Plant Design Suite - India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#eef1f4;--card:#fff;--tx:#14213d;--mu:#5b6678;--ac:#0b6670;--bd:#cfd6df;--ok:#17803d;--bad:#c02b2b;--hd:#14213d;--warn:#c77700;box-sizing:border-box}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151c;--card:#19212b;--tx:#e4e9ef;--mu:#93a0b2;--ac:#46b9c4;--bd:#2b3644;--ok:#4cc27a;--bad:#ff7b7b;--hd:#0b0f14;--warn:#ffb84d}}
-:root[data-theme="dark"]{--bg:#10151c;--card:#19212b;--tx:#e4e9ef;--mu:#93a0b2;--ac:#46b9c4;--bd:#2b3644;--ok:#4cc27a;--bad:#ff7b7b;--hd:#0b0f14;--warn:#ffb84d}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
-header{background:var(--hd);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-h1{font-size:17px;margin:0;font-weight:650}header small{opacity:.8;display:block;font-weight:400}
-nav{display:flex;gap:4px;overflow-x:auto;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:2}
-button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:6px 11px;border-radius:6px;cursor:pointer;white-space:nowrap}
+:root{--bg:#f2f5f8;--card:#fff;--tx:#12263a;--mu:#5d6c7d;--ac:#0b6670;--ac2:#e0f0f1;--bd:#d6dfe8;--ok:#17803d;--bad:#c02b2b;--hd:#0f2a43;--warn:#b86e00;--res:#edf5f6;box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d131a;--card:#151d27;--tx:#e4e9ef;--mu:#93a0b2;--ac:#4cc0cb;--ac2:#143039;--bd:#263344;--ok:#4cc27a;--bad:#ff7b7b;--hd:#07101a;--warn:#ffb84d;--res:#112a33}}
+:root[data-theme="dark"]{--bg:#0d131a;--card:#151d27;--tx:#e4e9ef;--mu:#93a0b2;--ac:#4cc0cb;--ac2:#143039;--bd:#263344;--ok:#4cc27a;--bad:#ff7b7b;--hd:#07101a;--warn:#ffb84d;--res:#112a33}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-variant-numeric:tabular-nums}
+header{background-color:var(--hd);background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 1px,transparent 1px 8px);color:#fff;padding:20px 24px 18px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--ac)}
+h1{font-size:24px;margin:0 0 2px;font-weight:600;letter-spacing:-.015em}header small{opacity:.78;display:block;font-weight:400;font-size:13px}
+header button{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.28);color:#fff}header button:hover{background:rgba(255,255,255,.2)}header button.p{background:#fff;color:var(--hd);border-color:#fff}
+.app{display:grid;grid-template-columns:236px minmax(0,1fr);max-width:1380px;margin:0 auto}
+nav{padding:16px 10px 28px 16px;position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto}
+.ng{margin-bottom:14px}.ng span{display:block;font-size:12px;font-weight:600;color:var(--mu);padding:4px 10px}
+nav button{display:block;width:100%;text-align:left;border:0;border-left:3px solid transparent;border-radius:0 8px 8px 0;background:transparent;padding:6px 10px;color:var(--tx)}
+nav button:hover{background:var(--ac2)}nav button.on{background:var(--ac2);border-left-color:var(--ac);color:var(--ac);font-weight:600}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
-nav button.on,button.p{background:var(--ac);color:#fff;border-color:var(--ac)}
-main{max-width:1100px;margin:0 auto;padding:12px}footer{max-width:1100px;margin:0 auto;padding:10px 12px 24px;color:var(--mu);font-size:12px}
-.c{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:12px}
-h2{font-size:15px;margin:0 0 2px}.mu{color:var(--mu);font-size:12px;margin:0 0 10px}
-.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:10px}
-label{display:block;font-size:12px;color:var(--mu)}label i{font-style:normal}
-input,select,textarea{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);color:var(--tx)}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:500}button.p:hover{filter:brightness(1.08)}
+main{padding:16px 24px 24px;min-width:0}footer{max-width:1380px;margin:0 auto;padding:6px 24px 28px;color:var(--mu);font-size:12px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 2px rgba(15,42,67,.05)}
+h2{font-size:18px;margin:0 0 4px;font-weight:600;letter-spacing:-.01em}.mu{color:var(--mu);font-size:12.5px;margin:0 0 16px;max-width:78ch}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 14px;margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:500;color:var(--mu)}label i{font-style:normal;font-weight:400}
+input,select,textarea{width:100%;font:inherit;padding:7px 10px;margin-top:3px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+input:hover,select:hover{border-color:var(--ac)}
 textarea{min-height:90px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-table{border-collapse:collapse;width:100%}td,th{padding:5px 8px;border-bottom:1px solid var(--bd);text-align:left}th{font-size:12px;color:var(--mu);font-weight:600}
-.o td:nth-child(2){text-align:right;font-weight:650}.o td:nth-child(3){color:var(--mu);width:70px}
-.sc{overflow-x:auto}.sc input,.sc select{min-width:70px;padding:4px 6px}
-.k{font-size:13px;padding:2px 0}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.invalid-input{border-color:var(--bad)!important;background:rgba(192,43,43,0.05)!important}
+table{border-collapse:collapse;width:100%}td,th{padding:7px 10px;border-bottom:1px solid var(--bd);text-align:left;vertical-align:top}th{font-size:12px;color:var(--mu);font-weight:600;background:var(--bg)}
+.o{background:var(--res);border-radius:10px;overflow:hidden}.o td{border-bottom:1px solid rgba(11,102,112,.12);padding:8px 14px}.o tr:last-child td{border-bottom:0}
+.o td:nth-child(2){text-align:right;font-weight:600;font-size:15px}.o td:nth-child(3){color:var(--mu);width:84px;font-size:12.5px}
+.sc{overflow-x:auto;border-radius:10px}.sc input,.sc select{min-width:70px;padding:5px 7px;margin-top:0}
+.k{display:flex;gap:8px;font-size:13px;padding:7px 12px;border-radius:8px;margin-top:6px;background:var(--bg)}
+.k::before{font-weight:700;flex:none}.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}.ok::before{content:"✓"}
+.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 11%,transparent)}.bad::before{content:"✕"}.warn{color:var(--warn)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.invalid-input{border-color:var(--bad)!important;background:rgba(192,43,43,.06)!important}
 .print-header{display:none}
-.fda-item{padding:10px;margin:8px 0;border:1px solid var(--bd);border-radius:6px;background:var(--bg)}
+.fda-item{padding:12px;margin:8px 0;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}
 .fda-item-header{display:flex;align-items:start;gap:10px;margin-bottom:6px}
 .fda-item-header input[type="checkbox"]{margin-top:4px;width:18px;height:18px;flex-shrink:0;cursor:pointer}
-.fda-item-title{font-weight:600;font-size:13px;color:var(--tx)}
-.fda-item-desc{font-size:12px;color:var(--mu);margin:4px 0 4px 28px}
+.fda-item-title{font-weight:600;font-size:13px}.fda-item-desc{font-size:12px;color:var(--mu);margin:4px 0 4px 28px}
 .fda-item-trend{font-size:11px;color:var(--ac);font-weight:600;margin-left:28px}
-.dl-badge{display:inline-block;padding:2px 6px;border-radius:3px;font-weight:600;font-size:11px}
+.dl-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600;font-size:11px}
 .dl-pass{background:#d4edda;color:#155724}.dl-fail{background:#f8d7da;color:#721c24}.dl-warn{background:#fff3cd;color:#856404}
+@media(max-width:860px){
+ header{padding:14px 16px}h1{font-size:20px}.app{display:block}
+ nav{display:flex;gap:4px;overflow-x:auto;padding:8px 12px;max-height:none;background:var(--card);border-bottom:1px solid var(--bd);z-index:2}
+ .ng{display:contents}.ng span{display:none}
+ nav button{width:auto;border:1px solid var(--bd);border-radius:999px;padding:5px 12px}nav button.on{border-color:var(--ac)}
+ main{padding:12px}.c{padding:14px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 @media print{
   .print-header{display:block!important;margin-bottom:20px;border-bottom:2px solid #000;padding-bottom:10px}
-  nav,.row,header button,details,summary{display:none!important}
+  nav,.row,header button,details,summary{display:none!important}.app{display:block!important}
   header{background:none!important;color:#000!important;border:none!important;padding:0!important}
   body{background:#fff!important;color:#000!important;font-size:12px!important}
-  .c{break-inside:avoid!important;border:1px solid #999!important;margin-bottom:15px!important}
+  .c{break-inside:avoid!important;border:1px solid #999!important;box-shadow:none!important;margin-bottom:15px!important}
+  .o{background:none!important}
   input,select,textarea{border:none!important;background:none!important;padding:0!important;color:#000!important}
-  .ok{color:#006400!important;font-weight:bold}.bad{color:#c02b2b!important;font-weight:bold}
+  .ok{color:#006400!important;font-weight:bold;background:none!important}.bad{color:#c02b2b!important;font-weight:bold;background:none!important}
 }
 </style></head><body>
 <header><div><h1 id="ttl">Injectable Plant Design Suite</h1><small id="sub"></small><small>Designed and engineered by Krishna Mohan</small></div><div class="row" style="margin:0"><button data-act="theme">Theme</button><button data-act="print">Print sheet</button><button data-act="printall" class="p">Print all calcs</button></div></header>
-<nav id="nav"></nav><main id="m"></main><footer>Injectable Plant Design Suite · Designed and engineered by Krishna Mohan. Design aid only.</footer>
+<div class="app"><nav id="nav"></nav><main id="m"></main></div><footer>Injectable Plant Design Suite · Designed and engineered by Krishna Mohan. Design aid only.</footer>
 <script>
 const K='ipds_elec_v6',$=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n2=(x,d=2)=>isFinite(x)?(+x).toLocaleString('en-IN',{maximumFractionDigits:d}):'–',lst=s=>String(s).split(',').map(Number).filter(Boolean).sort((a,b)=>a-b),R3=Math.sqrt(3);
@@ -554,7 +572,8 @@ function render(){
   compute();
   $('#ttl').textContent=S.p.name||'Injectable Plant Design Suite';
   $('#sub').textContent=`${S.p.doc} · Rev ${S.p.rev} · ${S.p.loc}`;
-  $('#nav').innerHTML=TABS.map(t=>`<button data-tab="${t[0]}"${t[0]==tab&&!all?' class="on"':''}>${t[1]}</button>`).join('');
+  const GR=[['Project',['dash','loads','sld','est','sch']],['Design basis',['scope','ind']],['Electrical',['tr','dg','ups','cab','efli','pfc','ltg','earth','prot','arc','hrm','lpr','bus']],['HVAC and cleanroom',['hvac','ahu','duct','press','rec','hepa','fan']],['Utilities and process',['wtr','deadleg','cold','pipe']],['Compliance',['fda','reg']],['Tools',['cust']]];
+  $('#nav').innerHTML=GR.map(g=>`<div class="ng"><span>${g[0]}</span>${g[1].map(id=>{const t=TABS.find(x=>x[0]==id);return t?`<button data-tab="${t[0]}"${t[0]==tab&&!all?' class="on"':''}>${t[1]}</button>`:''}).join('')}</div>`).join('');
   const printHeader = `<div class="print-header"><h2>${esc(S.p.name)} – Electrical Calculation Book</h2><p>Document: ${esc(S.p.doc)} | Rev: ${esc(S.p.rev)} | Location: ${esc(S.p.loc)}<br>Prepared by: ${esc(S.p.by)} | Print Date: ${new Date().toLocaleDateString()}</p></div>`;
   let body;
   if(all){
