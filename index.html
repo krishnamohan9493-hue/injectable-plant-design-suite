@@ -60,7 +60,6 @@ table{border-collapse:collapse;width:100%}td,th{padding:7px 10px;border-bottom:1
   .ok{color:#006400!important;font-weight:bold;background:none!important}.bad{color:#c02b2b!important;font-weight:bold;background:none!important}
 }
 /* refinements */
-.gate{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}.gate[hidden]{display:none}.gate .box{width:100%;max-width:410px;background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:28px;box-shadow:0 8px 30px rgba(15,42,67,.12)}.gate h1{font-size:22px}@media print{.gate{display:none!important}}
 body{font-family:Inter,"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:13.5px;-webkit-font-smoothing:antialiased}
 h1,h2{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;letter-spacing:0}
 h1{font-size:26px;font-weight:600}
@@ -79,13 +78,8 @@ table:not(.o) tr:hover td{background:color-mix(in srgb,var(--ac) 5%,transparent)
 .k{border-radius:6px;font-size:12.5px}
 @media(max-width:860px){.ng{border:0;padding:0;margin:0}nav button{border-radius:999px}h1{font-size:21px}}
 </style></head><body>
-<div class="gate" id="gate" hidden><div class="box"><h1>Injectable Plant Design Suite</h1><p class="mu" style="margin-top:10px">Sign in to activate access. Each activation lasts 24 hours.</p>
-<div id="g1"><label>Name<input id="gn" type="text" autocomplete="name"></label><label style="margin-top:10px">Email<input id="ge" type="email" autocomplete="email"></label><button class="p" id="gr" style="width:100%;margin-top:16px">Request activation code</button></div>
-<div id="g2" hidden><p class="mu" id="gm"></p><label>Activation code<input id="gc" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" style="font-size:20px;letter-spacing:.25em;text-align:center"></label><div class="row"><button class="p" id="ga" style="flex:1">Activate</button><button id="gb">Back</button></div></div>
-<div id="gs" class="k" hidden></div></div></div>
-<header><div><h1 id="ttl">Injectable Plant Design Suite</h1><small id="sub"></small><small>Designed and engineered by Krishna Mohan</small></div><div class="row" style="margin:0"><span id="sess" style="font-size:12px;opacity:.85;align-self:center"></span><button data-act="signout">Sign out</button><button data-act="theme">Theme</button><button data-act="csv">Export CSV</button><button data-act="print">Print sheet</button><button data-act="printall" class="p">Print all calcs</button></div></header>
+<header><div><h1 id="ttl">Injectable Plant Design Suite</h1><small id="sub"></small><small>Designed and engineered by Krishna Mohan</small></div><div class="row" style="margin:0"><button data-act="theme">Theme</button><button data-act="csv">Export CSV</button><button data-act="print">Print sheet</button><button data-act="printall" class="p">Print all calcs</button></div></header>
 <div class="app"><nav id="nav"></nav><main id="m"></main></div><footer>Injectable Plant Design Suite · Designed and engineered by Krishna Mohan. Design aid only.</footer>
-<script src="auth-config.js"></script>
 <script>
 const K='ipds_elec_v6',$=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const n2=(x,d=2)=>isFinite(x)?(+x).toLocaleString('en-IN',{maximumFractionDigits:d}):'–',lst=s=>String(s).split(',').map(Number).filter(Boolean).sort((a,b)=>a-b),R3=Math.sqrt(3);
@@ -635,33 +629,6 @@ const rows=S.rooms.map((r,i)=>{const lx=r.lux||def(r),K=Math.sqrt(r.a)/(2*L.hm),
 return`<section class="c"><h2>Cleanroom lighting schedule</h2><p class="mu">Lumen method for every room on the room data sheet. Rooms are treated as square for the room index. Utilisation factor depends on room index and surface reflectances, so take it from the luminaire photometric data.</p><div class="g">${li('fl','Luminaire lumens','lm')}${li('fw','Luminaire power','W')}${li('uf','Utilisation factor','')}${li('mf','Maintenance factor','')}${li('hm','Mounting height above work plane','m')}${li('lp','LPD limit','W/m²')}</div><div class="sc"><table><tr><th>ID</th><th>Room</th><th>Grade</th><th>Area m²</th><th>Target lux</th><th>Room index</th><th>Luminaires</th><th>Spacing m</th><th>LPD W/m²</th><th>Load kW</th></tr>${rows}</table></div><table class="o" style="margin-top:12px"><tr><td>Total luminaires</td><td>${tn}</td><td>nos</td></tr><tr><td>Total lighting load</td><td>${n2(tw/1000,2)}</td><td>kW</td></tr></table><div class="k ${bad?'bad':'ok'}">${bad?bad+' room(s) above the LPD limit':'Every room within the LPD limit'}</div></section>`}
 TABS.push(['dgstep','DG step loading'],['cabs','Cable schedule'],['lsch','Lighting schedule'],['relay','Relay grading'],['hspec','Harmonic spectrum']);
 
-/* ---- LOGIN AND ACTIVATION (soft lock; settings live in auth-config.js) ---- */
-const AC=(typeof window!=='undefined'&&window.AUTH_CONFIG)||{};
-const AUTH={enabled:AC.enabled!==false,owner:AC.owner||'krishnamohan9493@gmail.com',emailjs:Object.assign({service:'',template:'',key:''},AC.emailjs||{}),codeMin:AC.codeMin||30,sessionH:AC.sessionH||24,maxTries:5,maxReq:3};
-const emailOK=()=>!!(AUTH.emailjs.service&&AUTH.emailjs.template&&AUTH.emailjs.key);
-const jget=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}};
-const authOK=()=>{if(!AUTH.enabled||!emailOK())return true;const q=jget('ipds_sess');return !!(q&&q.exp>Date.now())};
-const sha=async x=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x)))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const gel=i=>document.getElementById(i),gmsg=(t,bad)=>{const e=gel('gs');e.hidden=!t;e.className='k '+(bad?'bad':'ok');e.textContent=t||''};
-function gstep(n){gel('g1').hidden=n!=1;gel('g2').hidden=n!=2}
-function showGate(){gel('gate').hidden=false;gel('m').innerHTML='';const p=jget('ipds_pend');if(p&&p.exp>Date.now()){gstep(2);gel('gm').textContent='Enter the activation code for '+p.email+'. The administrator emails it after approving your request.'}else gstep(1)}
-async function gRequest(){const n=gel('gn').value.trim(),em=gel('ge').value.trim().toLowerCase(),c=AUTH.emailjs;
-if(!n||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){gmsg('Enter your name and a valid email address.',1);return}
-if(!emailOK()){gmsg('The email service is not set up. Add the EmailJS keys to auth-config.js.',1);return}
-const now=Date.now(),rq=(jget('ipds_req')||[]).filter(t=>now-t<36e5);if(rq.length>=AUTH.maxReq){gmsg('Too many requests. Try again in an hour.',1);return}
-const code=String(100000+crypto.getRandomValues(new Uint32Array(1))[0]%900000);gel('gr').disabled=true;let r;
-try{r=await fetch('https://api.emailjs.com/api/v1.0/email/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service_id:c.service,template_id:c.template,user_id:c.key,template_params:{to_email:AUTH.owner,visitor_name:n,visitor_email:em,code,valid_minutes:AUTH.codeMin,session_hours:AUTH.sessionH,app:'Injectable Plant Design Suite'}})})}
-catch(e){gel('gr').disabled=false;gmsg('Cannot reach the email service. Check the internet connection'+(location.protocol=='file:'?' (opening the file directly from disk is blocked by EmailJS; use the GitHub Pages link)':'')+'.',1);return}
-if(!r.ok){const tx=(await r.text()).slice(0,180);gel('gr').disabled=false;gmsg('EmailJS rejected the request: '+tx+' Check the service ID, template ID, public key and the allowed domains in EmailJS.',1);return}
-gel('gr').disabled=false;rq.push(now);localStorage.setItem('ipds_req',JSON.stringify(rq));localStorage.setItem('ipds_pend',JSON.stringify({email:em,name:n,h:await sha(code+'|'+em),exp:now+AUTH.codeMin*6e4,tries:0}));
-gstep(2);gel('gm').textContent='Request sent to the administrator. Enter the 6-digit code within '+AUTH.codeMin+' minutes.';gmsg('')}
-async function gActivate(){const p=jget('ipds_pend');if(!p||p.exp<Date.now()){localStorage.removeItem('ipds_pend');gstep(1);gmsg('The code has expired. Request a new one.',1);return}
-if(p.tries>=AUTH.maxTries){localStorage.removeItem('ipds_pend');gstep(1);gmsg('Too many wrong attempts. Request a new code.',1);return}
-if(await sha(gel('gc').value.trim()+'|'+p.email)===p.h){localStorage.setItem('ipds_sess',JSON.stringify({email:p.email,name:p.name,exp:Date.now()+AUTH.sessionH*36e5}));localStorage.removeItem('ipds_pend');gel('gate').hidden=true;gmsg('');gel('gc').value='';render();authTick()}
-else{p.tries++;localStorage.setItem('ipds_pend',JSON.stringify(p));gmsg('Incorrect code. '+(AUTH.maxTries-p.tries)+' attempt(s) left.',1)}}
-function authTick(){const e=gel('sess'),q=jget('ipds_sess');if(!AUTH.enabled){e.textContent='';return}if(!emailOK()){e.textContent='Login inactive: email service not set up';e.style.color='#ffb84d';return}if(!q||q.exp<=Date.now()){showGate();return}const r=q.exp-Date.now();e.textContent='Access expires in '+Math.floor(r/36e5)+' h '+Math.floor(r%36e5/6e4)+' min';e.style.color=r<18e5?'#ffb84d':''}
-if(typeof document.getElementById=='function'){gel('gr').onclick=gRequest;gel('ga').onclick=gActivate;gel('gb').onclick=()=>{localStorage.removeItem('ipds_pend');gstep(1);gmsg('')};gel('gate').addEventListener('click',e=>e.stopPropagation());gel('gate').addEventListener('change',e=>e.stopPropagation());authTick();if(typeof setInterval=='function')setInterval(authTick,30000)}
-
 /* ---- DESIGN ACTIVITIES REGISTER (concept to handover) ---- */
 const PHS=['1 Concept','2 Basic design','3 Detailed design','4 Procurement','5 Construction','6 Commissioning and qualification','7 Handover'],ACS=['Not started','In progress','In review','Done'],ACW={'Not started':0,'In progress':.5,'In review':.75,'Done':1};
 const ACT0=`1|Project|Define URS: products, capacity, grades and regulatory markets|trace|URS
@@ -871,7 +838,6 @@ function regView(){return`<section class="c"><h2>Regulatory traceability</h2><di
 
 /* ---- RENDER ---- */
 function render(){
-  if(!authOK()){showGate();return}
   compute();
   $('#ttl').textContent=S.p.name||'Injectable Plant Design Suite';
   $('#sub').textContent=`${S.p.doc} · Rev ${S.p.rev} · ${S.p.loc}`;
@@ -987,7 +953,6 @@ document.addEventListener('click',e=>{
   if(a=='util'){const x=R.wtr.x;S.loads=S.loads.filter(l=>l.src!='wtr');[['Purified water generator',x.pg,1],['PW loop pump',x.pp,.9],['WFI generator',x.wg,1],['WFI loop pump',x.wp,.9],['Clean steam auxiliaries',x.ca,1]].forEach(r=>S.loads.push({a:'Utilities',d:r[0],kw:Math.round(r[1]*10)/10,ef:r[2],pf:.85,df:.8,c:'E',src:'wtr'}));log('loads','add','','utility loads');tab='loads'}
   if(a=='add'){S.loads.push({a:'',d:'New load',kw:10,ef:.9,pf:.85,df:.8,c:'N'});log('loads','add','','row')}
   if(a=='del'){S.loads.splice(i,1)}
-  if(a=='signout'){localStorage.removeItem('ipds_sess');location.reload();return}
   if(a=='acadd'){S.acts.push({ph:S.af.ph=='All'?PHS[2]:S.af.ph,d:S.af.d=='All'?'Project':S.af.d,t:'New activity',tab:'',del:'',st:'Not started',ow:'',due:''})}
   if(a=='acdel'){S.acts.splice(i,1)}
   if(a=='dsadd'){S.dgs.push({n:'New load group',kw:50,pf:.85,sm:3})}
